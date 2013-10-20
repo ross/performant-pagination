@@ -1,4 +1,3 @@
-*.log
-*.pot
+coverage/
+coverage.xml
 *.pyc
-local_settings.py
