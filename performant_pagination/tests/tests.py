@@ -3,8 +3,9 @@ Force import of all modules in this package in order to get the standard test
 runner to pick up the tests.  Yowzers.
 """
 
+from __future__ import absolute_import, print_function, unicode_literals
+
 # https://github.com/tomchristie/django-rest-framework/tree/master
-from __future__ import unicode_literals
 import os
 import django
 

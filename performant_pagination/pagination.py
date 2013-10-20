@@ -5,7 +5,6 @@
 from __future__ import absolute_import, print_function, unicode_literals
 
 from django.core.paginator import Page
-from django.utils import six
 
 
 # we inherit from Page, even though it's a bit odd since we're so

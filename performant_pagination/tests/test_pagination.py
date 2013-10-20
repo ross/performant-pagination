@@ -58,8 +58,6 @@ class TestBasicPagination(TestCase):
             self.assertEquals(number, paginator.validate_number(number))
 
     def test_has_other_pages(self):
-        objects = SimpleModel.objects.order_by('pk')
-
         # defaults
         paginator = PerformantPaginator(SimpleModel.objects.all())
         self.assertTrue(paginator)
@@ -223,7 +221,6 @@ class TestBasicPagination(TestCase):
         page = paginator.page()
         self.assertTrue(page)
 
-
         # make sure we got the expected data
         self.assertEquals(list(objects[:25]), list(page))
         # and the expected next tokens
@@ -261,7 +258,7 @@ class TestBasicPagination(TestCase):
         self.assertEquals(None, page.next_page_number())
 
     # test_compound, reversed
-    def test_reversed(self):
+    def test_reversed_compound(self):
         objects = SimpleModel.objects.order_by('-pk', '-name')
 
         # defaults
@@ -318,7 +315,6 @@ class TestBasicPagination(TestCase):
         # first page
         page = paginator.page()
         self.assertTrue(page)
-
 
         # make sure we got the expected data
         self.assertEquals(list(objects[:11]), list(page))

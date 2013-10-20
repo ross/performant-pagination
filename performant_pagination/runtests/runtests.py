@@ -1,9 +1,13 @@
 #!/usr/bin/env python
 
 # https://github.com/tomchristie/django-rest-framework/tree/master
-# http://ericholscher.com/blog/2009/jun/29/enable-setuppy-test-your-django-apps/
+# http://ericholscher.com/blog/2009/jun/29/
+#     enable-setuppy-test-your-django-apps/
 # http://www.travisswicegood.com/2010/01/17/django-virtualenv-pip-and-fabric/
 # http://code.djangoproject.com/svn/django/trunk/tests/runtests.py
+
+from __future__ import absolute_import, print_function, unicode_literals
+
 import os
 import sys
 
