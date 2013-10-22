@@ -6,7 +6,7 @@ from __future__ import absolute_import, print_function, unicode_literals
 
 from django.test import TestCase
 from performant_pagination.pagination import PerformantPaginator
-from performant_pagination.tests.models import SimpleModel
+from performant_pagination.tests.models import RelatedModel, SimpleModel
 
 
 class TestBasicPagination(TestCase):
@@ -403,3 +403,58 @@ class TestLarger(TestCase):
             self.assertEquals(50, len(page))
             self.assertEquals(list(objects[off:off + 50]), list(page))
             page = paginator.page(page.previous_page_number())
+
+
+class TestRelationships(TestCase):
+
+    def setUp(self):
+        SimpleModel.objects.bulk_create(
+            [SimpleModel(name='object {0}'.format(i)) for i in xrange(27)]
+        )
+        relateds = []
+        for simple in SimpleModel.objects.all():
+            relateds.extend(
+                [RelatedModel(number=i, simple=simple) for i in xrange(5)]
+            )
+        RelatedModel.objects.bulk_create(relateds)
+
+    def test_related_order(self):
+        objects = RelatedModel.objects.order_by('simple__name')
+
+        # defaults
+        paginator = PerformantPaginator(RelatedModel.objects.all(),
+                                        ordering=('simple__name',))
+        self.assertTrue(paginator)
+        self.assertTrue(str(paginator))
+        # first page
+        page = paginator.page()
+        self.assertTrue(page)
+        self.assertTrue(str(page))
+
+        # make sure we got the expected data
+        self.assertEquals(list(objects[:25]), list(page))
+        # and the expected next tokens
+        self.assertEquals(None, page.token)
+        self.assertEquals(str(objects[24].simple.name), page.next_token)
+        self.assertEquals(None, page.prev_token)
+
+    def test_related_compound(self):
+        objects = RelatedModel.objects.order_by('simple__name', '-pk')
+
+        # defaults
+        paginator = PerformantPaginator(RelatedModel.objects.all(),
+                                        ordering=('simple__name', '-pk'))
+        self.assertTrue(paginator)
+        self.assertTrue(str(paginator))
+        # first page
+        page = paginator.page()
+        self.assertTrue(page)
+        self.assertTrue(str(page))
+
+        # make sure we got the expected data
+        self.assertEquals(list(objects[:25]), list(page))
+        # and the expected next tokens
+        self.assertEquals(None, page.token)
+        self.assertEquals('{0}:{1}'.format(objects[24].simple.name,
+                                           objects[24].pk), page.next_token)
+        self.assertEquals(None, page.prev_token)

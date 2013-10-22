@@ -12,3 +12,14 @@ class SimpleModel(models.Model):
 
     def __unicode__(self):
         return '{0}: {1}'.format(self.pk, self.name)
+
+
+class RelatedModel(models.Model):
+    number = models.IntegerField()
+    simple = models.ForeignKey(SimpleModel, related_name='related_models')
+
+    def __unicode__(self):
+        return '{0}: {1}'.format(self.pk, self.number)
+
+    class Meta(object):
+        unique_together = (('simple', 'number'),)

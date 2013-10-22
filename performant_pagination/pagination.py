@@ -90,11 +90,21 @@ class PerformantPaginator(object):
         return number
 
     def _object_to_token(self, obj):
-        # TODO: handle relationships, __
         # TODO: more robust token creation, some sort of real serialization
         # that will escape seperators etc.
-        token = ':'.join([str(getattr(obj, field)) for field in self._fields])
-        return token
+        token = []
+        for field in self._fields:
+            pieces = field.split('__')
+            o = obj
+            if len(pieces) > 1:
+                # walk down relationships
+                for piece in pieces[:-1]:
+                    o = getattr(o, piece)
+                field = pieces[-1]
+
+            token.append(str(getattr(o, field)))
+
+        return ':'.join(token)
 
     def _token_to_clause(self, token, rev=False):
         values = token.split(':')
@@ -146,7 +156,6 @@ class PerformantPaginator(object):
         # if we have a truthy token, not including '', we'll check to see if
         # there's a prev
         if token:
-            # TODO: calculate this in __init__
             qs = self.queryset.filter(**self._token_to_clause(token,
                                                               rev=True)) \
                 .order_by(*self._reverse_ordering)
