@@ -14,7 +14,7 @@ class TestBasicPagination(TestCase):
 
     def setUp(self):
         SimpleModel.objects.bulk_create(
-            [SimpleModel(name='object {0}'.format(i)) for i in xrange(33)]
+            [SimpleModel(name='object {0}'.format(i)) for i in range(33)]
         )
 
     def test_page_1_work_around(self):
@@ -372,7 +372,7 @@ class TestLarger(TestCase):
 
     def setUp(self):
         SimpleModel.objects.bulk_create(
-            [SimpleModel(name='object {0}'.format(i)) for i in xrange(333)]
+            [SimpleModel(name='object {0}'.format(i)) for i in range(333)]
         )
 
     def test_larger(self):
@@ -409,12 +409,12 @@ class TestRelationships(TestCase):
 
     def setUp(self):
         SimpleModel.objects.bulk_create(
-            [SimpleModel(name='object {0}'.format(i)) for i in xrange(27)]
+            [SimpleModel(name='object {0}'.format(i)) for i in range(27)]
         )
         relateds = []
         for simple in SimpleModel.objects.all():
             relateds.extend(
-                [RelatedModel(number=i, simple=simple) for i in xrange(5)]
+                [RelatedModel(number=i, simple=simple) for i in range(5)]
             )
         RelatedModel.objects.bulk_create(relateds)
 
