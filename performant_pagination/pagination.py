@@ -49,9 +49,13 @@ class PerformantPage(Page):
 class PerformantPaginator(object):
 
     def __init__(self, queryset, per_page=25, ordering=('pk',),
-                 allow_count=False):
+                 allow_count=False, allow_empty_first_page=True, orphans=0):
         '''As a general rule you should ensure there's an appropriate index for
-        the fields provided in ordering'''
+        the fields provided in ordering.
+
+        allow_empty_first_page and orphans are currently ignored and only exist
+        to allow dropping in place of Django's built-in pagination.
+        '''
         self.queryset = queryset
         self.per_page = int(per_page)
         self.ordering = ordering
