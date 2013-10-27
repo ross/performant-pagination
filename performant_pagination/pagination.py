@@ -4,7 +4,7 @@
 
 from __future__ import absolute_import, print_function, unicode_literals
 
-from django.core.paginator import Page
+from django.core.paginator import Page, PageNotAnInteger
 
 
 # we inherit from Page, even though it's a bit odd since we're so
@@ -94,7 +94,8 @@ class PerformantPaginator(object):
 
     def validate_number(self, number):
         "Allows anything through since we"
-        # TODO: could potentially make sure it's a valid value for our ordering
+        if number and len(str(number).split(':')) != len(self.ordering):
+            raise PageNotAnInteger('invalid page number provided')
         return number
 
     def _object_to_token(self, obj):

@@ -4,6 +4,7 @@
 
 from __future__ import absolute_import, print_function, unicode_literals
 
+from django.core.paginator import Page, PageNotAnInteger
 from django.test import TestCase
 from performant_pagination.pagination import PerformantPaginator
 from performant_pagination.tests.models import RelatedModel, SimpleModel
@@ -26,6 +27,7 @@ class TestBasicPagination(TestCase):
         # first page
         page = paginator.page(1)
         self.assertTrue(page)
+        self.assertIsInstance(page, Page)
 
         # make sure we got the first page
         self.assertEquals(list(objects[:25]), list(page))
@@ -54,8 +56,29 @@ class TestBasicPagination(TestCase):
 
     def test_validate_number(self):
         paginator = PerformantPaginator(None)
-        for number in (None, '', 42, 1, -1, 'something', 'another:one'):
+        # things that are valid
+        for number in (None, '', 42, 1, -1, 'something'):
             self.assertEquals(number, paginator.validate_number(number))
+        # things that are not
+        with self.assertRaises(PageNotAnInteger):
+            paginator.validate_number('a:b')
+        with self.assertRaises(PageNotAnInteger):
+            paginator.validate_number('a:b:c')
+        with self.assertRaises(PageNotAnInteger):
+            paginator.validate_number('a:b:')
+
+        paginator = PerformantPaginator(None, ordering=('name', 'sub_name',
+                                                        'third'))
+        # things that are valid
+        self.assertEquals(None, paginator.validate_number(None))
+        self.assertEquals('a:b:c', paginator.validate_number('a:b:c'))
+        self.assertEquals('', paginator.validate_number(''))
+        # things that are not
+        with self.assertRaises(PageNotAnInteger):
+            paginator.validate_number('a')
+        with self.assertRaises(PageNotAnInteger):
+            paginator.validate_number('a:b')
+
 
     def test_has_other_pages(self):
         # defaults
