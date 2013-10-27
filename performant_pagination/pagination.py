@@ -53,6 +53,10 @@ class PerformantPaginator(object):
         '''As a general rule you should ensure there's an appropriate index for
         the fields provided in ordering.
 
+        allow_count (default False) indicates whether or not to allow count
+        queries that can be extremely expensive on large and fast changing
+        datasets.
+
         allow_empty_first_page and orphans are currently ignored and only exist
         to allow dropping in place of Django's built-in pagination.
         '''
