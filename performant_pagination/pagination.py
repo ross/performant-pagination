@@ -160,8 +160,8 @@ class PerformantPaginator(object):
         # if we have a truthy token, not including '', we'll check to see if
         # there's a prev
         if token:
-            qs = self.queryset.filter(**self._token_to_clause(token,
-                                                              rev=True)) \
+            clause = self._token_to_clause(token, rev=True)
+            qs = self.queryset.filter(**clause).only(*self._fields) \
                 .order_by(*self._reverse_ordering)
             try:
                 prev_token = self._object_to_token(qs[self.per_page - 1])
