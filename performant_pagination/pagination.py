@@ -13,22 +13,23 @@ from django.core.paginator import Page, PageNotAnInteger
 # not having to implement some methods
 class PerformantPage(Page):
 
-    def __init__(self, paginator, object_list, prev_token, token, next_token):
+    def __init__(self, paginator, object_list, previous_token, token,
+                 next_token):
         self.paginator = paginator
         self.object_list = object_list
-        self.prev_token = prev_token
+        self.previous_token = previous_token
         self.token = token
         self.next_token = next_token
 
     def __repr__(self):
-        return '<PerformantPage (%s, %s %s)>' % (self.prev_token, self.token,
-                                                 self.next_token)
+        return '<PerformantPage (%s, %s %s)>' % (self.previous_token,
+                                                 self.token, self.next_token)
 
     def has_next(self):
         return self.next_token is not None
 
     def has_previous(self):
-        return self.prev_token is not None
+        return self.previous_token is not None
 
     def has_other_pages(self):
         return self.has_next() or self.has_previous()
@@ -37,7 +38,7 @@ class PerformantPage(Page):
         return self.next_token
 
     def previous_page_number(self):
-        return self.prev_token
+        return self.previous_token
 
     def start_index(self):
         return None
@@ -161,7 +162,7 @@ class PerformantPaginator(object):
             # and now our last item's pk is the token for the next page
             next_token = self._object_to_token(object_list[-1])
 
-        prev_token = None
+        previous_token = None
         # if we have a truthy token, not including '', we'll check to see if
         # there's a prev
         if token:
@@ -169,10 +170,11 @@ class PerformantPaginator(object):
             qs = self.queryset.filter(**clause).only(*self._fields) \
                 .order_by(*self._reverse_ordering)
             try:
-                prev_token = self._object_to_token(qs[self.per_page - 1])
+                previous_token = self._object_to_token(qs[self.per_page - 1])
             except IndexError:
                 # can't be none b/c some tooling will turn it in to 'None'
-                prev_token = ''
+                previous_token = ''
 
         # return our page
-        return PerformantPage(self, object_list, prev_token, token, next_token)
+        return PerformantPage(self, object_list, previous_token, token,
+                              next_token)

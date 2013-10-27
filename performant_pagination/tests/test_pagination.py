@@ -34,7 +34,7 @@ class TestBasicPagination(TestCase):
         # and the expected next tokens
         self.assertEquals(None, page.token)
         self.assertEquals(str(objects[24].pk), page.next_token)
-        self.assertEquals(None, page.prev_token)
+        self.assertEquals(None, page.previous_token)
 
     def test_allow_count(self):
         objects = SimpleModel.objects.order_by('pk')
@@ -114,7 +114,7 @@ class TestBasicPagination(TestCase):
         # and the expected next tokens
         self.assertEquals(None, page.token)
         self.assertEquals(str(objects[24].pk), page.next_token)
-        self.assertEquals(None, page.prev_token)
+        self.assertEquals(None, page.previous_token)
 
         # check the page's methods
         self.assertFalse(page.has_previous())
@@ -135,7 +135,7 @@ class TestBasicPagination(TestCase):
         # and the expected next tokens
         self.assertEquals(str(objects[24].pk), page.token)
         self.assertEquals(None, page.next_token)
-        self.assertEquals('', page.prev_token)
+        self.assertEquals('', page.previous_token)
 
         # check the page's methods
         self.assertTrue(page.has_previous())
@@ -159,7 +159,7 @@ class TestBasicPagination(TestCase):
         # and the expected next tokens
         self.assertEquals(None, page.token)
         self.assertEquals(str(objects[24].pk), page.next_token)
-        self.assertEquals(None, page.prev_token)
+        self.assertEquals(None, page.previous_token)
 
         # check the page's methods
         self.assertFalse(page.has_previous())
@@ -180,7 +180,7 @@ class TestBasicPagination(TestCase):
         # and the expected next tokens
         self.assertEquals(str(objects[24].pk), page.token)
         self.assertEquals(None, page.next_token)
-        self.assertEquals('', page.prev_token)
+        self.assertEquals('', page.previous_token)
 
         # check the page's methods
         self.assertTrue(page.has_previous())
@@ -204,7 +204,7 @@ class TestBasicPagination(TestCase):
         # and the expected next tokens
         self.assertEquals(None, page.token)
         self.assertEquals(objects[24].name, page.next_token)
-        self.assertEquals(None, page.prev_token)
+        self.assertEquals(None, page.previous_token)
 
         # check the page's methods
         self.assertFalse(page.has_previous())
@@ -225,7 +225,7 @@ class TestBasicPagination(TestCase):
         # and the expected next tokens
         self.assertEquals(objects[24].name, page.token)
         self.assertEquals(None, page.next_token)
-        self.assertEquals('', page.prev_token)
+        self.assertEquals('', page.previous_token)
 
         # check the page's methods
         self.assertTrue(page.has_previous())
@@ -250,7 +250,7 @@ class TestBasicPagination(TestCase):
         self.assertEquals(None, page.token)
         obj = objects[24]
         self.assertEquals('{0}:{1}'.format(obj.pk, obj.name), page.next_token)
-        self.assertEquals(None, page.prev_token)
+        self.assertEquals(None, page.previous_token)
 
         # check the page's methods
         self.assertFalse(page.has_previous())
@@ -272,7 +272,7 @@ class TestBasicPagination(TestCase):
         # and the expected next tokens
         self.assertEquals('{0}:{1}'.format(obj.pk, obj.name), page.token)
         self.assertEquals(None, page.next_token)
-        self.assertEquals('', page.prev_token)
+        self.assertEquals('', page.previous_token)
 
         # check the page's methods
         self.assertTrue(page.has_previous())
@@ -298,7 +298,7 @@ class TestBasicPagination(TestCase):
         self.assertEquals(None, page.token)
         obj = objects[24]
         self.assertEquals('{0}:{1}'.format(obj.pk, obj.name), page.next_token)
-        self.assertEquals(None, page.prev_token)
+        self.assertEquals(None, page.previous_token)
 
         # check the page's methods
         self.assertFalse(page.has_previous())
@@ -320,7 +320,7 @@ class TestBasicPagination(TestCase):
         # and the expected next tokens
         self.assertEquals('{0}:{1}'.format(obj.pk, obj.name), page.token)
         self.assertEquals(None, page.next_token)
-        self.assertEquals('', page.prev_token)
+        self.assertEquals('', page.previous_token)
 
         # check the page's methods
         self.assertTrue(page.has_previous())
@@ -344,7 +344,7 @@ class TestBasicPagination(TestCase):
         # and the expected next tokens
         self.assertEquals(None, page.token)
         self.assertEquals(str(objects[10].pk), page.next_token)
-        self.assertEquals(None, page.prev_token)
+        self.assertEquals(None, page.previous_token)
 
         # check the page's methods
         self.assertFalse(page.has_previous())
@@ -365,7 +365,7 @@ class TestBasicPagination(TestCase):
         # and the expected next tokens
         self.assertEquals(str(objects[10].pk), page.token)
         self.assertEquals(str(objects[21].pk), page.next_token)
-        self.assertEquals('', page.prev_token)
+        self.assertEquals('', page.previous_token)
 
         # check the page's methods
         self.assertTrue(page.has_previous())
@@ -382,7 +382,7 @@ class TestBasicPagination(TestCase):
         # and the expected next tokens
         self.assertEquals(str(objects[21].pk), page.token)
         self.assertEquals(None, page.next_token)
-        self.assertEquals(str(objects[10].pk), page.prev_token)
+        self.assertEquals(str(objects[10].pk), page.previous_token)
 
         # check the page's methods
         self.assertTrue(page.has_previous())
@@ -459,7 +459,7 @@ class TestRelationships(TestCase):
         # and the expected next tokens
         self.assertEquals(None, page.token)
         self.assertEquals(str(objects[24].simple.name), page.next_token)
-        self.assertEquals(None, page.prev_token)
+        self.assertEquals(None, page.previous_token)
 
     def test_related_compound(self):
         objects = RelatedModel.objects.order_by('simple__name', '-pk')
@@ -480,4 +480,4 @@ class TestRelationships(TestCase):
         self.assertEquals(None, page.token)
         self.assertEquals('{0}:{1}'.format(objects[24].simple.name,
                                            objects[24].pk), page.next_token)
-        self.assertEquals(None, page.prev_token)
+        self.assertEquals(None, page.previous_token)
