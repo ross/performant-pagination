@@ -48,6 +48,7 @@ deterministic and predictable.
   expensive to take the count of large tables on many RDBMS engines.
 * Similarly the number of pages available and the "number" of the current
   page are not supported.
+* Ordering must be on a single field.
 
 # What You Gain
 
@@ -55,10 +56,9 @@ deterministic and predictable.
 
 # Examples
 
-    # order by updated descending and pk (to achieve token uniqueness)
+    # order by updated descending (order by field must be unique)
     qs = LargeDataSetModel.objects.all()
-    paginator = PerformantPaginator(qs, per_page=40, ordering=('-updated', 
-                                                               'pk'))
+    paginator = PerformantPaginator(qs, per_page=40, ordering='-updated')
     # hand paginator off to something that takes a pagintor. it implements the
     # full api, as does Page, but some of that api may have alternative
     # behaviors, i.e. return None for count etc.
@@ -71,5 +71,5 @@ deterministic and predictable.
 
     # public items, ordered by id
     qs = LargeDataSetModel.objects.filter(public=True)
-    paginator = PerformantPaginator(qs, ordering=('pk'))
+    paginator = PerformantPaginator(qs)
     # ...

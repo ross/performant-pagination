@@ -56,29 +56,8 @@ class TestBasicPagination(TestCase):
 
     def test_validate_number(self):
         paginator = PerformantPaginator(None)
-        # things that are valid
         for number in (None, '', 42, 1, -1, 'something'):
             self.assertEquals(number, paginator.validate_number(number))
-        # things that are not
-        with self.assertRaises(PageNotAnInteger):
-            paginator.validate_number('a:b')
-        with self.assertRaises(PageNotAnInteger):
-            paginator.validate_number('a:b:c')
-        with self.assertRaises(PageNotAnInteger):
-            paginator.validate_number('a:b:')
-
-        paginator = PerformantPaginator(None, ordering=('name', 'sub_name',
-                                                        'third'))
-        # things that are valid
-        self.assertEquals(None, paginator.validate_number(None))
-        self.assertEquals('a:b:c', paginator.validate_number('a:b:c'))
-        self.assertEquals('', paginator.validate_number(''))
-        # things that are not
-        with self.assertRaises(PageNotAnInteger):
-            paginator.validate_number('a')
-        with self.assertRaises(PageNotAnInteger):
-            paginator.validate_number('a:b')
-
 
     def test_has_other_pages(self):
         # defaults
@@ -148,7 +127,7 @@ class TestBasicPagination(TestCase):
 
         # defaults
         paginator = PerformantPaginator(SimpleModel.objects.all(),
-                                        ordering=('-pk',))
+                                        ordering='-pk')
         self.assertTrue(paginator)
         # first page
         page = paginator.page()
@@ -193,7 +172,7 @@ class TestBasicPagination(TestCase):
 
         # defaults
         paginator = PerformantPaginator(SimpleModel.objects.all(),
-                                        ordering=('name',))
+                                        ordering='name')
         self.assertTrue(paginator)
         # first page
         page = paginator.page()
@@ -224,101 +203,6 @@ class TestBasicPagination(TestCase):
         self.assertEquals(list(objects[25:]), list(page))
         # and the expected next tokens
         self.assertEquals(objects[24].name, page.token)
-        self.assertEquals(None, page.next_token)
-        self.assertEquals('', page.previous_token)
-
-        # check the page's methods
-        self.assertTrue(page.has_previous())
-        self.assertEquals('', page.previous_page_number())
-        self.assertFalse(page.has_next())
-        self.assertEquals(None, page.next_page_number())
-
-    def test_compound(self):
-        objects = SimpleModel.objects.order_by('pk', 'name')
-
-        # defaults
-        paginator = PerformantPaginator(SimpleModel.objects.all(),
-                                        ordering=('pk', 'name'))
-        self.assertTrue(paginator)
-        # first page
-        page = paginator.page()
-        self.assertTrue(page)
-
-        # make sure we got the expected data
-        self.assertEquals(list(objects[:25]), list(page))
-        # and the expected next tokens
-        self.assertEquals(None, page.token)
-        obj = objects[24]
-        self.assertEquals('{0}:{1}'.format(obj.pk, obj.name), page.next_token)
-        self.assertEquals(None, page.previous_token)
-
-        # check the page's methods
-        self.assertFalse(page.has_previous())
-        self.assertEquals(None, page.previous_page_number())
-        self.assertTrue(page.has_next())
-        self.assertEquals('{0}:{1}'.format(obj.pk, obj.name),
-                          page.next_page_number())
-
-        # these guys are not applicable/implemented with our system
-        self.assertFalse(page.start_index())
-        self.assertFalse(page.end_index())
-
-        # now lets check the 2nd page
-        page = paginator.page(page.next_page_number())
-        self.assertTrue(page)
-
-        # make sure we got the expected data
-        self.assertEquals(list(objects[25:]), list(page))
-        # and the expected next tokens
-        self.assertEquals('{0}:{1}'.format(obj.pk, obj.name), page.token)
-        self.assertEquals(None, page.next_token)
-        self.assertEquals('', page.previous_token)
-
-        # check the page's methods
-        self.assertTrue(page.has_previous())
-        self.assertEquals('', page.previous_page_number())
-        self.assertFalse(page.has_next())
-        self.assertEquals(None, page.next_page_number())
-
-    # test_compound, reversed
-    def test_reversed_compound(self):
-        objects = SimpleModel.objects.order_by('-pk', '-name')
-
-        # defaults
-        paginator = PerformantPaginator(SimpleModel.objects.all(),
-                                        ordering=('-pk', '-name'))
-        self.assertTrue(paginator)
-        # first page
-        page = paginator.page()
-        self.assertTrue(page)
-
-        # make sure we got the expected data
-        self.assertEquals(list(objects[:25]), list(page))
-        # and the expected next tokens
-        self.assertEquals(None, page.token)
-        obj = objects[24]
-        self.assertEquals('{0}:{1}'.format(obj.pk, obj.name), page.next_token)
-        self.assertEquals(None, page.previous_token)
-
-        # check the page's methods
-        self.assertFalse(page.has_previous())
-        self.assertEquals(None, page.previous_page_number())
-        self.assertTrue(page.has_next())
-        self.assertEquals('{0}:{1}'.format(obj.pk, obj.name),
-                          page.next_page_number())
-
-        # these guys are not applicable/implemented with our system
-        self.assertFalse(page.start_index())
-        self.assertFalse(page.end_index())
-
-        # now lets check the 2nd page
-        page = paginator.page(page.next_page_number())
-        self.assertTrue(page)
-
-        # make sure we got the expected data
-        self.assertEquals(list(objects[25:]), list(page))
-        # and the expected next tokens
-        self.assertEquals('{0}:{1}'.format(obj.pk, obj.name), page.token)
         self.assertEquals(None, page.next_token)
         self.assertEquals('', page.previous_token)
 
@@ -446,7 +330,7 @@ class TestRelationships(TestCase):
 
         # defaults
         paginator = PerformantPaginator(RelatedModel.objects.all(),
-                                        ordering=('simple__name',))
+                                        ordering='simple__name')
         self.assertTrue(paginator)
         self.assertTrue(str(paginator))
         # first page
@@ -461,12 +345,12 @@ class TestRelationships(TestCase):
         self.assertEquals(str(objects[24].simple.name), page.next_token)
         self.assertEquals(None, page.previous_token)
 
-    def test_related_compound(self):
-        objects = RelatedModel.objects.order_by('simple__name', '-pk')
+    def test_related_reverse(self):
+        objects = RelatedModel.objects.order_by('-simple__name')
 
         # defaults
         paginator = PerformantPaginator(RelatedModel.objects.all(),
-                                        ordering=('simple__name', '-pk'))
+                                        ordering='-simple__name')
         self.assertTrue(paginator)
         self.assertTrue(str(paginator))
         # first page
@@ -478,6 +362,5 @@ class TestRelationships(TestCase):
         self.assertEquals(list(objects[:25]), list(page))
         # and the expected next tokens
         self.assertEquals(None, page.token)
-        self.assertEquals('{0}:{1}'.format(objects[24].simple.name,
-                                           objects[24].pk), page.next_token)
+        self.assertEquals(objects[24].simple.name, page.next_token)
         self.assertEquals(None, page.previous_token)

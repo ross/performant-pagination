@@ -49,10 +49,10 @@ class PerformantPage(Page):
 
 class PerformantPaginator(object):
 
-    def __init__(self, queryset, per_page=25, ordering=('pk',),
-                 allow_count=False, allow_empty_first_page=True, orphans=0):
+    def __init__(self, queryset, per_page=25, ordering='pk', allow_count=False,
+                 allow_empty_first_page=True, orphans=0):
         '''As a general rule you should ensure there's an appropriate index for
-        the fields provided in ordering.
+        the field provided in ordering.
 
         allow_count (default False) indicates whether or not to allow count
         queries that can be extremely expensive on large and fast changing
@@ -66,19 +66,10 @@ class PerformantPaginator(object):
         self.ordering = ordering
         self.allow_count = allow_count
 
-        fields = []
-        reverse_ordering = []
-        for field in self.ordering:
-            if field[0] == '-':
-                field = field[1:]
-                fields.append(field)
-                reverse_ordering.append(field)
-            else:
-                fields.append(field)
-                reverse_ordering.append('-{0}'.format(field))
-
-        self._fields = fields
-        self._reverse_ordering = reverse_ordering
+        field = ordering.replace('-', '')
+        self._reverse_ordering = field if ordering[0] == '-' else \
+            '-{0}'.format(ordering)
+        self._field = field
 
     def __repr__(self):
         return '<PerformantPaginator (%d, %s %d)>' % (self.per_page,
@@ -94,44 +85,30 @@ class PerformantPaginator(object):
         return None
 
     def validate_number(self, number):
-        "Allows anything through since we"
-        if number and len(str(number).split(':')) != len(self.ordering):
-            raise PageNotAnInteger('invalid page number provided')
+        # TODO: validate format for field type?
         return number
 
     def _object_to_token(self, obj):
         # TODO: more robust token creation, some sort of real serialization
-        # that will escape seperators etc.
-        token = []
-        for field in self._fields:
-            pieces = field.split('__')
-            o = obj
-            if len(pieces) > 1:
-                # walk down relationships
-                for piece in pieces[:-1]:
-                    o = getattr(o, piece)
-                field = pieces[-1]
+        pieces = self._field.split('__')
+        if len(pieces) > 1:
+            # walk down relationships
+            for piece in pieces[:-1]:
+                obj = getattr(obj, piece)
 
-            token.append(str(getattr(o, field)))
-
-        return ':'.join(token)
+        return str(getattr(obj, pieces[-1]))
 
     def _token_to_clause(self, token, rev=False):
-        values = token.split(':')
-        clause = {}
         # in the forward direction we want things that are greater than our
         # value, but if the ordering is -, we want less than. if rev=True we
         # fip it
         direction = ('lt', 'gt') if rev else ('gt', 'lt')
-        for i, field in enumerate(self.ordering):
-            if field[0] == '-':
-                d = direction[1]
-            else:
-                d = direction[0]
-            field = field.replace('-', '')
-            # TODO: do we need to convert values to their appropriate type?
-            clause['{0}__{1}'.format(field, d)] = values[i]
-        return clause
+        if self.ordering[0] == '-':
+            d = direction[1]
+        else:
+            d = direction[0]
+        # TODO: do we need to convert values to their appropriate type?
+        return {'{0}__{1}'.format(self._field, d): token}
 
     def page(self, token=None):
         # work around generics being integer specific with a default of 1,
@@ -149,7 +126,7 @@ class PerformantPaginator(object):
             qs = qs.filter(**self._token_to_clause(token))
 
         # apply our ordering
-        qs = qs.order_by(*self.ordering)
+        qs = qs.order_by(self.ordering)
 
         # get our object list, +1 to see if there's more to come
         object_list = list(qs[:self.per_page + 1])
@@ -167,8 +144,8 @@ class PerformantPaginator(object):
         # there's a prev
         if token:
             clause = self._token_to_clause(token, rev=True)
-            qs = self.queryset.filter(**clause).only(*self._fields) \
-                .order_by(*self._reverse_ordering)
+            qs = self.queryset.filter(**clause).only(self._field) \
+                .order_by(self._reverse_ordering)
             try:
                 previous_token = self._object_to_token(qs[self.per_page - 1])
             except IndexError:
