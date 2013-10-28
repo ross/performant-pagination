@@ -4,7 +4,7 @@
 
 from __future__ import absolute_import, print_function, unicode_literals
 
-from django.core.paginator import Page, PageNotAnInteger
+from django.core.paginator import Page
 
 
 # we inherit from Page, even though it's a bit odd since we're so
@@ -89,14 +89,21 @@ class PerformantPaginator(object):
         return number
 
     def _object_to_token(self, obj):
-        # TODO: more robust token creation, some sort of real serialization
-        pieces = self._field.split('__')
-        if len(pieces) > 1:
-            # walk down relationships
-            for piece in pieces[:-1]:
-                obj = getattr(obj, piece)
+        field = self._field
+        if field == 'pk':
+            # TODO: how do we call value_to_string on pk
+            value = str(getattr(obj, field))
+        else:
+            pieces = field.split('__')
+            if len(pieces) > 1:
+                # traverse relationships, -1 will be our final field
+                for piece in pieces[:-1]:
+                    obj = getattr(obj, piece)
+            # obj is now the object on which our final field lives
+            value = obj._meta.get_field(pieces[-1]).value_to_string(obj)
 
-        return str(getattr(obj, pieces[-1]))
+        # return our value
+        return value
 
     def _token_to_clause(self, token, rev=False):
         # in the forward direction we want things that are greater than our
@@ -107,8 +114,26 @@ class PerformantPaginator(object):
             d = direction[1]
         else:
             d = direction[0]
-        # TODO: do we need to convert values to their appropriate type?
-        return {'{0}__{1}'.format(self._field, d): token}
+
+        field = self._field
+        if field == 'pk':
+            # TODO: how do we call to_python on pk
+            value = token
+        else:
+            pieces = field.split('__')
+            meta = self.queryset.model._meta
+            if len(pieces) > 1:
+                # traverse relationships, -1 will be our final field
+                for piece in pieces[:-1]:
+                    # grab the ForeignKey field, then its RelatedObject, which
+                    # holds it's parent_model (the one at the other end of the
+                    # relationship) and finally its _meta which is what we're
+                    # after
+                    meta = meta.get_field(piece).related.parent_model._meta
+
+            value = meta.get_field(pieces[-1]).to_python(token)
+
+        return {'{0}__{1}'.format(self._field, d): value}
 
     def page(self, token=None):
         # work around generics being integer specific with a default of 1,

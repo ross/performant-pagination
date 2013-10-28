@@ -23,3 +23,9 @@ class RelatedModel(models.Model):
 
     class Meta(object):
         unique_together = (('simple', 'number'),)
+
+
+class TimedModel(models.Model):
+    when_datetime = models.DateTimeField(db_index=True, unique=True)
+    when_date = models.DateField(db_index=True, unique=True)
+    when_time = models.TimeField(db_index=True, unique=True)

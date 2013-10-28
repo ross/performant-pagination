@@ -4,10 +4,12 @@
 
 from __future__ import absolute_import, print_function, unicode_literals
 
-from django.core.paginator import Page, PageNotAnInteger
+from datetime import datetime, timedelta
+from django.core.paginator import Page
 from django.test import TestCase
 from performant_pagination.pagination import PerformantPaginator
-from performant_pagination.tests.models import RelatedModel, SimpleModel
+from performant_pagination.tests.models import RelatedModel, SimpleModel, \
+    TimedModel
 
 
 class TestBasicPagination(TestCase):
@@ -345,6 +347,16 @@ class TestRelationships(TestCase):
         self.assertEquals(str(objects[24].simple.name), page.next_token)
         self.assertEquals(None, page.previous_token)
 
+        # page 2
+        page = paginator.page(page.next_token)
+        self.assertTrue(page)
+        # make sure we got the expected data
+        self.assertEquals(list(objects[25:50]), list(page))
+        # and the expected next tokens
+        self.assertEquals('', page.previous_token)
+        self.assertEquals(str(objects[24].simple.name), page.token)
+        self.assertEquals(str(objects[49].simple.name), page.next_token)
+
     def test_related_reverse(self):
         objects = RelatedModel.objects.order_by('-simple__name')
 
@@ -364,3 +376,56 @@ class TestRelationships(TestCase):
         self.assertEquals(None, page.token)
         self.assertEquals(objects[24].simple.name, page.next_token)
         self.assertEquals(None, page.previous_token)
+
+
+class TestDateTime(TestCase):
+    maxDiff = None
+
+    @classmethod
+    def setUpClass(cls):
+        # build up the test objects
+        timed_models = []
+        base = datetime(2013, 10, 27, 8, 44, 0)
+        for i in range(65):
+            # with days and minutes datetime, date, and time will have
+            # interesting differences
+            when = base - timedelta(days=i, minutes=i)
+            # two objects at each time
+            timed_models.append(TimedModel(when_datetime=when, when_date=when,
+                                           when_time=when))
+
+        # create them
+        TimedModel.objects.bulk_create(timed_models)
+
+    def test_date_time(self):
+
+        # fetch them all in our order, now that they're created
+        ordering = 'when_datetime'
+        timed_models = list(TimedModel.objects.order_by(ordering))
+
+        paginator = PerformantPaginator(TimedModel.objects.all(),
+                                        ordering=ordering)
+        self.assertTrue(paginator)
+        # first page
+        page = paginator.page()
+        self.assertTrue(Page)
+        self.assertEquals(None, page.previous_token)
+        self.assertEquals(None, page.token)
+        o = timed_models[24]
+
+        _datetime_format = '%Y-%m-%dT%H:%M:%S'
+
+        self.assertEquals(o.when_datetime.strftime(_datetime_format),
+                          page.next_token)
+        self.assertEquals(timed_models[:25], list(page))
+        # second page
+        page = paginator.page(page.next_token)
+        self.assertTrue(Page)
+        self.assertEquals('', page.previous_token)
+        o = timed_models[24]
+        self.assertEquals(o.when_datetime.strftime(_datetime_format),
+                          page.token)
+        o = timed_models[49]
+        self.assertEquals(o.when_datetime.strftime(_datetime_format),
+                          page.next_token)
+        self.assertEquals(timed_models[25:50], list(page))
