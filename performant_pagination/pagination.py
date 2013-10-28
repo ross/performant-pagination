@@ -4,6 +4,7 @@
 
 from __future__ import absolute_import, print_function, unicode_literals
 
+from base64 import b64decode, b64encode
 from django.core.paginator import Page
 
 
@@ -102,7 +103,7 @@ class PerformantPaginator(object):
             value = obj._meta.get_field(pieces[-1]).value_to_string(obj)
 
         # return our value
-        return value
+        return b64encode(value)
 
     def _token_to_clause(self, token, rev=False):
         # in the forward direction we want things that are greater than our
@@ -113,6 +114,8 @@ class PerformantPaginator(object):
             d = direction[1]
         else:
             d = direction[0]
+
+        token = b64decode(token)
 
         field = self._field
         meta = self.queryset.model._meta

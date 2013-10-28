@@ -4,6 +4,7 @@
 
 from __future__ import absolute_import, print_function, unicode_literals
 
+from base64 import b64encode
 from datetime import datetime, timedelta
 from django.core.paginator import Page
 from django.test import TestCase
@@ -35,7 +36,7 @@ class TestBasicPagination(TestCase):
         self.assertEquals(list(objects[:25]), list(page))
         # and the expected next tokens
         self.assertEquals(None, page.token)
-        self.assertEquals(str(objects[24].pk), page.next_token)
+        self.assertEquals(b64encode(str(objects[24].pk)), page.next_token)
         self.assertEquals(None, page.previous_token)
 
     def test_allow_count(self):
@@ -94,14 +95,15 @@ class TestBasicPagination(TestCase):
         self.assertEquals(list(objects[:25]), list(page))
         # and the expected next tokens
         self.assertEquals(None, page.token)
-        self.assertEquals(str(objects[24].pk), page.next_token)
+        self.assertEquals(b64encode(str(objects[24].pk)), page.next_token)
         self.assertEquals(None, page.previous_token)
 
         # check the page's methods
         self.assertFalse(page.has_previous())
         self.assertEquals(None, page.previous_page_number())
         self.assertTrue(page.has_next())
-        self.assertEquals(str(objects[24].pk), page.next_page_number())
+        self.assertEquals(b64encode(str(objects[24].pk)),
+                          page.next_page_number())
 
         # these guys are not applicable/implemented with our system
         self.assertFalse(page.start_index())
@@ -114,7 +116,7 @@ class TestBasicPagination(TestCase):
         # make sure we got the expected data
         self.assertEquals(list(objects[25:]), list(page))
         # and the expected next tokens
-        self.assertEquals(str(objects[24].pk), page.token)
+        self.assertEquals(b64encode(str(objects[24].pk)), page.token)
         self.assertEquals(None, page.next_token)
         self.assertEquals('', page.previous_token)
 
@@ -139,14 +141,15 @@ class TestBasicPagination(TestCase):
         self.assertEquals(list(objects[:25]), list(page))
         # and the expected next tokens
         self.assertEquals(None, page.token)
-        self.assertEquals(str(objects[24].pk), page.next_token)
+        self.assertEquals(b64encode(str(objects[24].pk)), page.next_token)
         self.assertEquals(None, page.previous_token)
 
         # check the page's methods
         self.assertFalse(page.has_previous())
         self.assertEquals(None, page.previous_page_number())
         self.assertTrue(page.has_next())
-        self.assertEquals(str(objects[24].pk), page.next_page_number())
+        self.assertEquals(b64encode(str(objects[24].pk)),
+                          page.next_page_number())
 
         # these guys are not applicable/implemented with our system
         self.assertFalse(page.start_index())
@@ -159,7 +162,7 @@ class TestBasicPagination(TestCase):
         # make sure we got the expected data
         self.assertEquals(list(objects[25:]), list(page))
         # and the expected next tokens
-        self.assertEquals(str(objects[24].pk), page.token)
+        self.assertEquals(b64encode(str(objects[24].pk)), page.token)
         self.assertEquals(None, page.next_token)
         self.assertEquals('', page.previous_token)
 
@@ -184,14 +187,14 @@ class TestBasicPagination(TestCase):
         self.assertEquals(list(objects[:25]), list(page))
         # and the expected next tokens
         self.assertEquals(None, page.token)
-        self.assertEquals(objects[24].name, page.next_token)
+        self.assertEquals(b64encode(objects[24].name), page.next_token)
         self.assertEquals(None, page.previous_token)
 
         # check the page's methods
         self.assertFalse(page.has_previous())
         self.assertEquals(None, page.previous_page_number())
         self.assertTrue(page.has_next())
-        self.assertEquals(objects[24].name, page.next_page_number())
+        self.assertEquals(b64encode(objects[24].name), page.next_page_number())
 
         # these guys are not applicable/implemented with our system
         self.assertFalse(page.start_index())
@@ -204,7 +207,7 @@ class TestBasicPagination(TestCase):
         # make sure we got the expected data
         self.assertEquals(list(objects[25:]), list(page))
         # and the expected next tokens
-        self.assertEquals(objects[24].name, page.token)
+        self.assertEquals(b64encode(objects[24].name), page.token)
         self.assertEquals(None, page.next_token)
         self.assertEquals('', page.previous_token)
 
@@ -229,14 +232,15 @@ class TestBasicPagination(TestCase):
         self.assertEquals(list(objects[:11]), list(page))
         # and the expected next tokens
         self.assertEquals(None, page.token)
-        self.assertEquals(str(objects[10].pk), page.next_token)
+        self.assertEquals(b64encode(str(objects[10].pk)), page.next_token)
         self.assertEquals(None, page.previous_token)
 
         # check the page's methods
         self.assertFalse(page.has_previous())
         self.assertEquals(None, page.previous_page_number())
         self.assertTrue(page.has_next())
-        self.assertEquals(str(objects[10].pk), page.next_page_number())
+        self.assertEquals(b64encode(str(objects[10].pk)),
+                          page.next_page_number())
 
         # these guys are not applicable/implemented with our system
         self.assertFalse(page.start_index())
@@ -249,15 +253,16 @@ class TestBasicPagination(TestCase):
         # make sure we got the expected data
         self.assertEquals(list(objects[11:22]), list(page))
         # and the expected next tokens
-        self.assertEquals(str(objects[10].pk), page.token)
-        self.assertEquals(str(objects[21].pk), page.next_token)
+        self.assertEquals(b64encode(str(objects[10].pk)), page.token)
+        self.assertEquals(b64encode(str(objects[21].pk)), page.next_token)
         self.assertEquals('', page.previous_token)
 
         # check the page's methods
         self.assertTrue(page.has_previous())
         self.assertEquals('', page.previous_page_number())
         self.assertTrue(page.has_next())
-        self.assertEquals(str(objects[21].pk), page.next_page_number())
+        self.assertEquals(b64encode(str(objects[21].pk)),
+                          page.next_page_number())
 
         # and finally the 3rd page
         page = paginator.page(page.next_page_number())
@@ -266,13 +271,14 @@ class TestBasicPagination(TestCase):
         # make sure we got the expected data
         self.assertEquals(list(objects[22:]), list(page))
         # and the expected next tokens
-        self.assertEquals(str(objects[21].pk), page.token)
+        self.assertEquals(b64encode(str(objects[21].pk)), page.token)
         self.assertEquals(None, page.next_token)
-        self.assertEquals(str(objects[10].pk), page.previous_token)
+        self.assertEquals(b64encode(str(objects[10].pk)), page.previous_token)
 
         # check the page's methods
         self.assertTrue(page.has_previous())
-        self.assertEquals(str(objects[10].pk), page.previous_page_number())
+        self.assertEquals(b64encode(str(objects[10].pk)),
+                          page.previous_page_number())
         self.assertFalse(page.has_next())
         self.assertEquals(None, page.next_page_number())
 
@@ -344,7 +350,7 @@ class TestRelationships(TestCase):
         self.assertEquals(list(objects[:25]), list(page))
         # and the expected next tokens
         self.assertEquals(None, page.token)
-        self.assertEquals(str(objects[24].simple.name), page.next_token)
+        self.assertEquals(b64encode(objects[24].simple.name), page.next_token)
         self.assertEquals(None, page.previous_token)
 
         # page 2
@@ -354,8 +360,8 @@ class TestRelationships(TestCase):
         self.assertEquals(list(objects[25:50]), list(page))
         # and the expected next tokens
         self.assertEquals('', page.previous_token)
-        self.assertEquals(str(objects[24].simple.name), page.token)
-        self.assertEquals(str(objects[49].simple.name), page.next_token)
+        self.assertEquals(b64encode(objects[24].simple.name), page.token)
+        self.assertEquals(b64encode(objects[49].simple.name), page.next_token)
 
     def test_related_reverse(self):
         objects = RelatedModel.objects.order_by('-simple__name')
@@ -374,7 +380,7 @@ class TestRelationships(TestCase):
         self.assertEquals(list(objects[:25]), list(page))
         # and the expected next tokens
         self.assertEquals(None, page.token)
-        self.assertEquals(objects[24].simple.name, page.next_token)
+        self.assertEquals(b64encode(objects[24].simple.name), page.next_token)
         self.assertEquals(None, page.previous_token)
 
 
@@ -411,21 +417,21 @@ class TestDateTime(TestCase):
         self.assertTrue(Page)
         self.assertEquals(None, page.previous_token)
         self.assertEquals(None, page.token)
-        o = timed_models[24]
 
-        _datetime_format = '%Y-%m-%dT%H:%M:%S'
+        datetime_format = '%Y-%m-%dT%H:%M:%S'
 
-        self.assertEquals(o.when_datetime.strftime(_datetime_format),
+        def tokenize_datetime(dt):
+            return b64encode(dt.strftime(datetime_format))
+
+        self.assertEquals(tokenize_datetime(timed_models[24].when_datetime),
                           page.next_token)
         self.assertEquals(timed_models[:25], list(page))
         # second page
         page = paginator.page(page.next_token)
         self.assertTrue(Page)
         self.assertEquals('', page.previous_token)
-        o = timed_models[24]
-        self.assertEquals(o.when_datetime.strftime(_datetime_format),
+        self.assertEquals(tokenize_datetime(timed_models[24].when_datetime),
                           page.token)
-        o = timed_models[49]
-        self.assertEquals(o.when_datetime.strftime(_datetime_format),
+        self.assertEquals(tokenize_datetime(timed_models[49].when_datetime),
                           page.next_token)
         self.assertEquals(timed_models[25:50], list(page))
