@@ -91,8 +91,7 @@ class PerformantPaginator(object):
     def _object_to_token(self, obj):
         field = self._field
         if field == 'pk':
-            # TODO: how do we call value_to_string on pk
-            value = str(getattr(obj, field))
+            value = obj._meta.pk.value_to_string(obj)
         else:
             pieces = field.split('__')
             if len(pieces) > 1:
@@ -116,12 +115,11 @@ class PerformantPaginator(object):
             d = direction[0]
 
         field = self._field
+        meta = self.queryset.model._meta
         if field == 'pk':
-            # TODO: how do we call to_python on pk
-            value = token
+            value = meta.pk.to_python(token)
         else:
             pieces = field.split('__')
-            meta = self.queryset.model._meta
             if len(pieces) > 1:
                 # traverse relationships, -1 will be our final field
                 for piece in pieces[:-1]:
