@@ -5,7 +5,7 @@
 from __future__ import absolute_import, print_function, unicode_literals
 
 from base64 import b64decode, b64encode
-from django.core.paginator import Page
+from django.core.paginator import Page, InvalidPage
 
 
 # we inherit from Page, even though it's a bit odd since we're so
@@ -86,8 +86,10 @@ class PerformantPaginator(object):
         return None
 
     def validate_number(self, number):
-        # TODO: validate format for field type?
-        return number
+        try:
+            return b64decode(number, validate=True)
+        except TypeError:
+            raise InvalidPage("Page number is invalid")
 
     def _object_to_token(self, obj):
         field = self._field
